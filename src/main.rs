@@ -1,3 +1,5 @@
+use std::fmt;
+
 // This should be well-formed ASCII.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Ascii (
@@ -6,12 +8,18 @@ pub struct Ascii (
 );
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct NotAsciiError ();
+pub struct NotAsciiError (&'static str);
+
+impl fmt::Display for NotAsciiError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        writeln!(f, "{}", self.0)
+    }
+}
 
 impl Ascii {
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Ascii, NotAsciiError> {
         if bytes.iter().any(|&byte| !byte.is_ascii()) {
-            return Err(NotAsciiError())
+            return Err(NotAsciiError("not well-formed"))
         }
         Ok(Ascii(bytes))
     }
@@ -31,7 +39,8 @@ fn not_ascii() {
     let not_ascii = vec![0x00, 0x80, 0xff];
     let not = Ascii::from_bytes(not_ascii).err().unwrap();
 
-    assert_eq!(not, NotAsciiError());
+    assert_eq!(not, NotAsciiError("not well-formed"));
+    println!("{:}", not);
 }
 
 fn main() {
