@@ -25,6 +25,13 @@ impl Ascii {
     }
 }
 
+impl From<Ascii> for String {
+    fn from(ascii: Ascii) -> Self {
+        // my ascii is well-formed, checked.
+        unsafe { String::from_utf8_unchecked(ascii.0) }
+    }
+}
+
 #[test]
 fn well_ascii() {
     let well_formed_ascii = vec![0x00, 0x41, 0x7f];
@@ -41,6 +48,17 @@ fn not_ascii() {
 
     assert_eq!(not, NotAsciiError("not well-formed"));
     println!("{:}", not);
+}
+
+#[test]
+fn my_ascii_to_string() {
+    let my_ascii = Ascii::from_bytes(
+        vec!['\x68' as u8, '\x65' as u8,
+            '\x6C' as u8, '\x6C' as u8, '\x6F' as u8]
+        )
+        .ok().unwrap();
+
+    assert_eq!(String::from(my_ascii), "hello".to_string());
 }
 
 fn main() {
